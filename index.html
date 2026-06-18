@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT Support Field Manual</title>
+<style>
+:root{
+  /* === Token system: "service bench" theme ===
+     Inspired by rack-mount gear silkscreen labels, patch panel color codes,
+     and amber CRT diagnostic terminals. */
+  --bg:           #14171c;
+  --bg-panel:     #1b1f26;
+  --bg-panel-2:   #20252d;
+  --bg-inset:     #11141a;
+  --line:         #2a3038;
+  --line-soft:    #232830;
+  --text:         #e8eaed;
+  --text-dim:     #9aa3ad;
+  --text-faint:   #677079;
+  --amber:        #ffb454;
+  --amber-dim:    #8a6633;
+  --green:        #6fd17f;
+  --green-dim:    #2f4a36;
+  --red:          #ff6b6b;
+  --red-dim:      #4a2f30;
+  --blue:         #6fb3ff;
+  --blue-dim:     #2a3a4d;
+  --purple:       #c79bff;
+
+  --mono: "IBM Plex Mono", "SF Mono", "Cascadia Code", Consolas, monospace;
+  --sans: "Inter", "Segoe UI", system-ui, sans-serif;
+
+  --radius: 6px;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Subtle rack-texture backdrop */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  pointer-events:none;
+  z-index:0;
+}
+
+a{color:var(--blue); text-decoration:none;}
+a:hover{text-decoration:underline;}
+code{
+  font-family:var(--mono);
+  background:var(--bg-inset);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:1px 6px;
+  font-size:0.88em;
+  color:var(--amber);
+  white-space:nowrap;
+}
+kbd{
+  font-family:var(--mono);
+  background:var(--bg-inset);
+  border:1px solid var(--line-soft);
+  border-bottom-width:2px;
+  border-radius:4px;
+  padding:1px 7px;
+  font-size:0.85em;
+  color:var(--text);
+}
+
+::selection{background:var(--amber-dim); color:#fff;}
+
+/* ============ SKIP LINK / FOCUS ============ */
+:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+.skip-link{
+  position:absolute; left:-9999px; top:0;
+  background:var(--amber); color:#000; padding:8px 14px; z-index:999;
+}
+.skip-link:focus{left:8px; top:8px;}
+
+/* ============ LAYOUT SHELL ============ */
+.shell{
+  display:grid;
+  grid-template-columns: 290px 1fr;
+  min-height:100vh;
+  position:relative;
+  z-index:1;
+}
+
+/* ============ SIDEBAR ============ */
+.sidebar{
+  background:var(--bg-panel);
+  border-right:1px solid var(--line);
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+  padding:18px 14px 40px;
+}
+.sidebar::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+.sidebar::-webkit-scrollbar-track{background:transparent;}
+
+.brand{
+  display:flex; align-items:center; gap:10px;
+  padding:6px 8px 16px;
+  border-bottom:1px solid var(--line-soft);
+  margin-bottom:14px;
+}
+.brand-mark{
+  width:34px; height:34px;
+  border:1.5px solid var(--amber);
+  border-radius:7px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-weight:700; color:var(--amber);
+  font-size:13px; flex-shrink:0;
+  background:linear-gradient(135deg, rgba(255,180,84,0.12), transparent);
+}
+.brand-text{font-family:var(--mono); line-height:1.25;}
+.brand-text .t1{font-size:13px; font-weight:700; color:var(--text); letter-spacing:0.02em;}
+.brand-text .t2{font-size:10.5px; color:var(--text-faint); letter-spacing:0.06em; text-transform:uppercase;}
+
+/* search box */
+.search-wrap{position:relative; margin-bottom:16px;}
+.search-input{
+  width:100%;
+  background:var(--bg-inset);
+  border:1px solid var(--line);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:13.5px;
+  padding:10px 34px 10px 32px;
+  border-radius:var(--radius);
+  transition:border-color .15s ease;
+}
+.search-input::placeholder{color:var(--text-faint);}
+.search-input:focus{border-color:var(--amber); outline:none;}
+.search-icon{
+  position:absolute; left:10px; top:50%; transform:translateY(-50%);
+  color:var(--text-faint); pointer-events:none; font-size:14px;
+}
+.search-clear{
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  background:none; border:none; color:var(--text-faint);
+  cursor:pointer; font-size:15px; padding:4px; line-height:1;
+  display:none;
+}
+.search-clear.show{display:block;}
+.search-clear:hover{color:var(--text);}
+.search-hint{
+  font-size:11px; color:var(--text-faint); padding:0 2px 14px;
+  font-family:var(--mono);
+}
+.search-hint kbd{font-size:10px; padding:0px 5px;}
+
+.search-results-panel{
+  display:none;
+  position:absolute;
+  top:calc(100% + 4px); left:0; right:0;
+  background:var(--bg-panel-2);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  max-height:60vh;
+  overflow-y:auto;
+  z-index:50;
+  box-shadow:0 12px 28px rgba(0,0,0,0.5);
+}
+.search-results-panel.show{display:block;}
+.sr-item{
+  display:block;
+  padding:10px 12px;
+  border-bottom:1px solid var(--line-soft);
+  cursor:pointer;
+}
+.sr-item:last-child{border-bottom:none;}
+.sr-item:hover, .sr-item.active{background:var(--bg-inset);}
+.sr-section{
+  font-family:var(--mono); font-size:10px; text-transform:uppercase;
+  letter-spacing:0.05em; color:var(--amber); margin-bottom:3px;
+}
+.sr-title{font-size:13.5px; color:var(--text); font-weight:600; margin-bottom:2px;}
+.sr-snippet{font-size:12px; color:var(--text-dim); line-height:1.4;}
+.sr-snippet mark{background:var(--amber-dim); color:#fff; border-radius:2px; padding:0 1px;}
+.sr-empty{padding:20px 14px; color:var(--text-faint); font-size:13px; text-align:center;}
+
+/* nav tree */
+.nav-group{margin-bottom:4px;}
+.nav-cat{
+  font-family:var(--mono);
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:0.07em;
+  color:var(--text-faint);
+  padding:14px 8px 6px;
+}
+.nav-link{
+  display:flex; align-items:center; gap:9px;
+  padding:8px 9px;
+  border-radius:5px;
+  color:var(--text-dim);
+  font-size:13.5px;
+  cursor:pointer;
+  border-left:2px solid transparent;
+}
+.nav-link:hover{background:var(--bg-panel-2); color:var(--text);}
+.nav-link.active{
+  background:var(--bg-panel-2);
+  color:var(--amber);
+  border-left:2px solid var(--amber);
+}
+.nav-ic{font-size:14px; width:18px; text-align:center; flex-shrink:0;}
+
+/* ============ MAIN CONTENT ============ */
+.main{
+  padding:0;
+  min-width:0;
+}
+.topbar{
+  position:sticky; top:0; z-index:20;
+  background:rgba(20,23,28,0.88);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+  padding:14px 36px;
+  display:none;
+}
+.content{
+  max-width:980px;
+  padding:40px 44px 120px;
+}
+
+.hero{
+  padding:48px 44px 36px;
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(ellipse 800px 300px at 15% 0%, rgba(255,180,84,0.08), transparent 60%),
+    radial-gradient(ellipse 600px 280px at 90% 10%, rgba(111,179,255,0.06), transparent 60%);
+}
+.hero-eyebrow{
+  font-family:var(--mono); font-size:11.5px; color:var(--green);
+  letter-spacing:0.08em; text-transform:uppercase; margin-bottom:14px;
+  display:flex; align-items:center; gap:8px;
+}
+.hero-eyebrow .dot{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green);}
+.hero h1{
+  font-family:var(--mono);
+  font-size:clamp(28px, 4vw, 40px);
+  font-weight:700;
+  margin:0 0 14px;
+  letter-spacing:-0.01em;
+  color:var(--text);
+}
+.hero h1 .accent{color:var(--amber);}
+.hero p{color:var(--text-dim); max-width:620px; font-size:15px; margin:0 0 22px;}
+.hero-stats{display:flex; gap:28px; flex-wrap:wrap; margin-top:24px;}
+.hstat{font-family:var(--mono);}
+.hstat .n{font-size:22px; color:var(--amber); font-weight:700;}
+.hstat .l{font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.05em;}
+
+/* section structure */
+.section{padding:56px 44px; border-bottom:1px solid var(--line);}
+.section:last-child{border-bottom:none;}
+.section-head{
+  display:flex; align-items:baseline; gap:14px;
+  margin-bottom:8px;
+}
+.section-num{
+  font-family:var(--mono); color:var(--amber-dim); font-size:13px; font-weight:700;
+}
+.section-head h2{
+  font-family:var(--mono);
+  font-size:24px;
+  margin:0;
+  color:var(--text);
+  letter-spacing:-0.01em;
+}
+.section-sub{color:var(--text-dim); font-size:14px; margin:0 0 30px; max-width:680px;}
+
+/* card / block components */
+.card{
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:20px 22px;
+  margin-bottom:18px;
+}
+.card-title{
+  font-weight:700; font-size:15px; color:var(--text);
+  margin:0 0 4px;
+  display:flex; align-items:center; gap:9px;
+}
+.card-title .ic{color:var(--amber); font-size:15px;}
+.card-meta{font-size:11.5px; color:var(--text-faint); font-family:var(--mono); margin-bottom:14px;}
+
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+/* fix tree (problem -> checks) */
+.fix{
+  border-left:3px solid var(--line);
+  padding-left:16px;
+  margin:14px 0;
+}
+.fix-step{
+  display:flex; gap:10px; padding:7px 0;
+  font-size:14px; color:var(--text-dim);
+  border-bottom:1px dashed var(--line-soft);
+}
+.fix-step:last-child{border-bottom:none;}
+.fix-step .num{
+  font-family:var(--mono); color:var(--amber); font-size:12.5px;
+  flex-shrink:0; width:20px; padding-top:2px;
+}
+.fix-step b{color:var(--text);}
+
+/* tables */
+.tbl-wrap{overflow-x:auto; margin:10px 0 18px; border:1px solid var(--line); border-radius:8px;}
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th{
+  background:var(--bg-panel-2);
+  text-align:left; padding:10px 14px;
+  font-family:var(--mono); font-size:11px; text-transform:uppercase;
+  letter-spacing:0.04em; color:var(--text-faint);
+  border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+td{
+  padding:9px 14px;
+  border-bottom:1px solid var(--line-soft);
+  color:var(--text-dim);
+  vertical-align:top;
+}
+tr:last-child td{border-bottom:none;}
+td b, td strong{color:var(--text);}
+td code{white-space:normal;}
+
+/* tags / badges */
+.tag{
+  display:inline-block; font-family:var(--mono); font-size:10.5px;
+  padding:2px 8px; border-radius:4px; font-weight:600;
+  letter-spacing:0.02em;
+}
+.tag-green{background:var(--green-dim); color:var(--green);}
+.tag-red{background:var(--red-dim); color:var(--red);}
+.tag-amber{background:var(--amber-dim); color:var(--amber);}
+.tag-blue{background:var(--blue-dim); color:var(--blue);}
+
+/* callouts */
+.callout{
+  border:1px solid var(--line);
+  border-left:3px solid var(--amber);
+  background:var(--bg-panel);
+  border-radius:0 8px 8px 0;
+  padding:14px 18px;
+  margin:16px 0;
+  font-size:13.5px;
+  color:var(--text-dim);
+}
+.callout.danger{border-left-color:var(--red);}
+.callout.tip{border-left-color:var(--green);}
+.callout .clabel{
+  font-family:var(--mono); font-size:11px; text-transform:uppercase;
+  letter-spacing:0.06em; font-weight:700; margin-bottom:6px; display:block;
+}
+.callout.danger .clabel{color:var(--red);}
+.callout.tip .clabel{color:var(--green);}
+.callout:not(.danger):not(.tip) .clabel{color:var(--amber);}
+
+/* cable color swatches */
+.wire-row{display:flex; align-items:center; gap:10px; padding:6px 0;}
+.wire-pin{
+  font-family:var(--mono); font-size:11.5px; color:var(--text-faint);
+  width:26px; flex-shrink:0;
+}
+.wire-swatch{
+  width:46px; height:14px; border-radius:3px; flex-shrink:0;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.wire-label{font-size:12.5px; color:var(--text-dim); font-family:var(--mono);}
+
+/* OSI layer stack */
+.osi-stack{display:flex; flex-direction:column; gap:3px; margin:18px 0;}
+.osi-layer{
+  display:grid;
+  grid-template-columns:36px 130px 1fr;
+  gap:14px;
+  align-items:center;
+  padding:12px 16px;
+  border-radius:6px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+}
+.osi-layer .ln{font-family:var(--mono); font-weight:700; color:var(--amber); font-size:15px;}
+.osi-layer .lname{font-weight:700; color:var(--text); font-size:13.5px;}
+.osi-layer .ldesc{color:var(--text-dim); font-size:12.5px;}
+.osi-layer .lex{
+  font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-top:3px;
+}
+
+/* keycap shortcut chips */
+.kbd-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:6px 0;}
+
+/* TOC mini search index marker (hidden, used by JS) */
+[data-searchable]{}
+
+/* back to top */
+.totop{
+  position:fixed; bottom:24px; right:24px;
+  width:42px; height:42px; border-radius:50%;
+  background:var(--bg-panel); border:1px solid var(--line);
+  color:var(--amber); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:18px; opacity:0; pointer-events:none;
+  transition:opacity .2s ease, transform .2s ease;
+  z-index:30; box-shadow:0 8px 20px rgba(0,0,0,0.4);
+}
+.totop.show{opacity:1; pointer-events:auto;}
+.totop:hover{transform:translateY(-2px); border-color:var(--amber);}
+
+/* mobile nav toggle */
+.mobile-bar{display:none;}
+
+/* responsive */
+@media(max-width:880px){
+  .shell{grid-template-columns:1fr;}
+  .sidebar{
+    position:fixed; left:0; top:0; bottom:0; width:84%; max-width:320px;
+    transform:translateX(-100%);
+    transition:transform .25s ease;
+    z-index:100;
+    box-shadow:20px 0 40px rgba(0,0,0,0.5);
+  }
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:90;
+  }
+  .sidebar-overlay.show{display:block;}
+  .mobile-bar{
+    display:flex; align-items:center; gap:12px;
+    padding:14px 18px; background:var(--bg-panel);
+    border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:80;
+  }
+  .mobile-bar button{
+    background:var(--bg-inset); border:1px solid var(--line); color:var(--text);
+    border-radius:6px; padding:8px 12px; font-size:18px; cursor:pointer;
+  }
+  .mobile-bar .mb-title{font-family:var(--mono); font-size:13px; color:var(--amber); font-weight:700;}
+  .content{padding:28px 20px 100px;}
+  .section{padding:38px 20px;}
+  .hero{padding:32px 20px 28px;}
+  .grid2, .grid3{grid-template-columns:1fr;}
+  .osi-layer{grid-template-columns:28px 1fr; grid-template-rows:auto auto;}
+  .osi-layer .ldesc{grid-column:1/-1;}
+}
+
+/* print */
+@media print{
+  .sidebar, .totop, .mobile-bar{display:none;}
+  .shell{grid-template-columns:1fr;}
+  body{background:#fff; color:#000;}
+}
+
+.section-divider-label{
+  font-family:var(--mono); font-size:10px; color:var(--text-faint);
+  text-align:right; margin-top:-10px; margin-bottom:30px;
+}
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="brand">
+      <div class="brand-mark">IT</div>
+      <div class="brand-text">
+        <div class="t1">FIELD MANUAL</div>
+        <div class="t2">Desk Reference v1.0</div>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search the manual…" autocomplete="off">
+      <button class="search-clear" id="searchClear" aria-label="Clear search">✕</button>
+      <div class="search-results-panel" id="searchResults"></div>
+    </div>
+    <div class="search-hint">Press <kbd>/</kbd> to search · <kbd>Esc</kbd> to close</div>
+
+    <div class="nav-group" id="navGroup">
+      <div class="nav-cat">Reference</div>
+      <a class="nav-link" data-target="sec-printers"><span class="nav-ic">🖨</span> 01 · Printers</a>
+      <a class="nav-link" data-target="sec-network"><span class="nav-ic">📶</span> 02 · Network Issues</a>
+      <a class="nav-link" data-target="sec-cabling"><span class="nav-ic">🧷</span> 03 · Cabling Tactics</a>
+      <a class="nav-link" data-target="sec-cameras"><span class="nav-ic">📷</span> 04 · Cameras &amp; IP Phones</a>
+      <a class="nav-link" data-target="sec-office"><span class="nav-ic">📧</span> 05 · MS Office</a>
+      <a class="nav-link" data-target="sec-hardware"><span class="nav-ic">🧠</span> 06 · PC Hardware</a>
+      <a class="nav-link" data-target="sec-osi"><span class="nav-ic">🧩</span> 07 · OSI / TCP-IP</a>
+      <a class="nav-link" data-target="sec-ports"><span class="nav-ic">🚪</span> 08 · Ports &amp; Protocols</a>
+      <a class="nav-link" data-target="sec-windows"><span class="nav-ic">🔐</span> 09 · Windows / AD</a>
+      <a class="nav-link" data-target="sec-extra"><span class="nav-ic">🧰</span> 10 · Everything Else</a>
+    </div>
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main" id="main-content">
+    <div class="mobile-bar">
+      <button id="navToggle" aria-label="Open navigation">☰</button>
+      <span class="mb-title">FIELD MANUAL</span>
+    </div>
+
+    <div class="content" id="contentRoot">
+
+      <!-- HERO -->
+      <div class="hero">
+        <div class="hero-eyebrow"><span class="dot"></span> STATUS: ON SHIFT</div>
+        <h1>IT Support <span class="accent">Field Manual</span></h1>
+        <p>The desk reference for printers, networking, peripherals, hardware, cabling, and the protocol stack — written for the ticket queue, not the textbook. Search above or jump to a section.</p>
+        <div class="hero-stats">
+          <div class="hstat"><div class="n">10</div><div class="l">Sections</div></div>
+          <div class="hstat"><div class="n">120+</div><div class="l">Fixes &amp; checks</div></div>
+          <div class="hstat"><div class="n">⌘F</div><div class="l">Instant search</div></div>
+        </div>
+      </div>
+
+      <!-- SECTIONS GET INSERTED HERE BY BUILD -->
+      <section class="section" id="sec-printers" data-nav-section="printers">
+  <div class="section-head"><span class="section-num">01</span><h2>Printers</h2></div>
+  <p class="section-sub">Most printer tickets are spool service, driver, or network path issues — in that order of likelihood.</p>
+
+  <div class="card" data-searchable data-title="Printer not printing — general triage" data-section="Printers">
+    <div class="card-title"><span class="ic">🖨</span> Not printing — general triage order</div>
+    <div class="card-meta">Run top to bottom, stop at first fix</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">01</span><div>Check the printer's own panel for errors first — <b>paper jam, low toner, offline light, tray empty</b>. Physical state beats software every time.</div></div>
+      <div class="fix-step"><span class="num">02</span><div>Confirm it's <b>not paused or set offline</b> in Windows: Settings → Printers &amp; scanners → select printer → make sure "Use printer offline" is unchecked.</div></div>
+      <div class="fix-step"><span class="num">03</span><div>Restart the <b>Print Spooler service</b> (see fix below) — fixes the majority of "stuck queue" tickets.</div></div>
+      <div class="fix-step"><span class="num">04</span><div>Ping the printer's IP from the user's PC. No reply = network/switch port issue, not printer software.</div></div>
+      <div class="fix-step"><span class="num">05</span><div>Check if it prints a <b>test page from the printer's own panel</b>. If that fails, it's a hardware/printer-side issue, not the PC.</div></div>
+      <div class="fix-step"><span class="num">06</span><div>Try printing from a different machine on the same network. Isolates whether it's the one PC or the printer/network.</div></div>
+      <div class="fix-step"><span class="num">07</span><div>Remove and re-add the printer using the correct driver (not "Generic / Text Only").</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Restart the Print Spooler service" data-section="Printers">
+    <div class="card-title"><span class="ic">⚙</span> Restart the Print Spooler (fixes stuck queues)</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Press <kbd>Win</kbd> + <kbd>R</kbd>, type <code>services.msc</code>, Enter.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Find <b>Print Spooler</b> → right-click → <b>Restart</b>.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>If restart is greyed out / it won't stop: open an elevated CMD and run <code>net stop spooler</code> then <code>net start spooler</code>.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>If the queue is still stuck, clear it manually before restarting: delete all files in <code>C:\Windows\System32\spool\PRINTERS</code> (stop the spooler first, then delete, then start it again).</div></div>
+    </div>
+    <div class="callout tip"><span class="clabel">One-liner (admin CMD/PowerShell)</span>
+    <code>net stop spooler &amp; del /Q /F "%systemroot%\System32\spool\PRINTERS\*.*" &amp; net start spooler</code></div>
+  </div>
+
+  <div class="card" data-searchable data-title="Print queue stuck / job won't clear" data-section="Printers">
+    <div class="card-title"><span class="ic">📋</span> Print queue stuck on one job</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Cancel the job from the queue first — if it's stuck "Deleting," that confirms a spooler-level lock, not a printer issue.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Restart the Print Spooler service (above). This almost always clears a "Deleting" job that won't go away.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>If it reappears every time, the print spool folder has a corrupted .SHD/.SPL file pair — stop the spooler, manually delete files in the PRINTERS spool folder, restart spooler.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Large jobs (big PDFs, high-res images) can simply be slow to spool — wait 60s before assuming it's stuck.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Printer shows offline" data-section="Printers">
+    <div class="card-title"><span class="ic">🔌</span> Printer shows "Offline" in Windows</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Uncheck "Use Printer Offline" (right-click printer in Devices &amp; Printers).</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Confirm the printer's IP hasn't changed — network printers are commonly added by static IP; if the printer got a new DHCP lease, Windows is now pointing at a dead address. Check printer panel → Network info, compare to the port configured in <b>Printer Properties → Ports</b>.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Ping the printer IP. Timeout = it's a network/power/cable problem at the printer, not Windows.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>For USB-connected printers: try a different USB port/cable, and check it isn't in USB selective suspend (Device Manager → printer's USB hub → Power Management).</div></div>
+    </div>
+    <div class="callout"><span class="clabel">Best practice</span>For office network printers, always assign a DHCP reservation or static IP on the printer itself — saves recurring "offline" tickets after router reboots.</div>
+  </div>
+
+  <div class="card" data-searchable data-title="Print quality issues streaks lines faded" data-section="Printers">
+    <div class="card-title"><span class="ic">🖼</span> Print quality problems</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+      <tr><td>Faded / streaky text</td><td>Low toner/ink, dirty drum (laser) or clogged nozzle (inkjet)</td><td>Replace cartridge; run nozzle-cleaning utility (inkjet); redistribute toner by shaking cartridge (laser, temp fix)</td></tr>
+      <tr><td>Vertical lines down the page</td><td>Scratched drum or debris on laser scanner mirror</td><td>Replace drum unit / toner cartridge; clean if accessible</td></tr>
+      <tr><td>Ghosting (faint repeat image)</td><td>Worn drum, fuser issue</td><td>Replace drum unit; check fuser assembly</td></tr>
+      <tr><td>Color cast / wrong colors</td><td>Empty/clogged single color cartridge</td><td>Check individual cartridge levels, run head cleaning</td></tr>
+      <tr><td>Smearing, toner rubs off</td><td>Fuser not heating properly</td><td>Replace fuser unit; check for fuser error code on panel</td></tr>
+      <tr><td>Blank pages</td><td>Toner empty, sealing tape not removed (new cartridge), drum protective film left on</td><td>Check cartridge, remove all seals/film from new consumables</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card" data-searchable data-title="Paper jam troubleshooting" data-section="Printers">
+    <div class="card-title"><span class="ic">📄</span> Paper jams</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Always pull jammed paper in the <b>direction of normal paper travel</b> — pulling backward can tear paper and leave scraps inside.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Check all trays, the duplexer unit (back/bottom panel), and the fuser area — most jams hide in one of these three.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Repeated jams from one tray = worn pickup/feed rollers (common on machines printing 50k+ pages) or paper loaded above the fill line / wrong paper weight.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Fan and re-square the paper stack before loading — humidity-stuck sheets are a very common cause.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Cant add network printer not found" data-section="Printers">
+    <div class="card-title"><span class="ic">🌐</span> Can't add a network printer / printer not found</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Confirm the PC and printer are on the <b>same subnet/VLAN</b> — printers on a guest or isolated VLAN won't be discoverable.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Add manually instead of relying on discovery: Add Printer → "The printer that I want isn't listed" → Add using TCP/IP address → enter printer IP, port type <b>RAW (9100)</b> or use the right driver.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Check Windows Firewall isn't blocking <b>mDNS/Bonjour (UDP 5353)</b> or printer discovery, especially on domain-joined laptops with strict firewall profiles.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>For print-server-hosted printers, confirm the print server is reachable: <code>\\printservername</code> in Explorer.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Scanner scan to email not working" data-section="Printers">
+    <div class="card-title"><span class="ic">📠</span> Scan-to-email / scan-to-folder not working (MFPs)</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Scan-to-folder: confirm the share permissions still allow the printer's service account write access — password rotations on that account are the #1 cause.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Scan-to-email: check the SMTP relay settings on the printer's web admin page — port, auth, and TLS settings must match what the mail server now requires (orgs that migrate to Microsoft 365 often need app passwords or a relay connector).</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Test by browsing to the printer's IP in a browser to reach its embedded web server — most config and clear error logs live there, not on the panel.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sec-network" data-nav-section="network">
+  <div class="section-head"><span class="section-num">02</span><h2>Network Issues — Laptops &amp; PCs</h2></div>
+  <p class="section-sub">Work outward: NIC → local stack → switch/AP → DHCP/DNS → upstream. Don't jump to "the network is down" before checking the one machine.</p>
+
+  <div class="card" data-searchable data-title="No internet access general triage" data-section="Network">
+    <div class="card-title"><span class="ic">📶</span> "No internet" — general triage order</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">01</span><div>Check the <b>network icon</b> in the tray — globe/exclamation icon tells you a lot before you type anything.</div></div>
+      <div class="fix-step"><span class="num">02</span><div>Run <code>ipconfig /all</code>. Look at the IPv4 address: <b>169.254.x.x</b> means no DHCP response (APIPA) — go straight to DHCP troubleshooting below.</div></div>
+      <div class="fix-step"><span class="num">03</span><div>Ping the default gateway: <code>ping &lt;gateway-ip&gt;</code>. Fails = local link/switch/Wi-Fi problem, not internet.</div></div>
+      <div class="fix-step"><span class="num">04</span><div>Ping a public IP (e.g. <code>ping 8.8.8.8</code>). Works but websites don't load = <b>DNS issue</b>, not connectivity.</div></div>
+      <div class="fix-step"><span class="num">05</span><div>Try <code>nslookup google.com</code>. Fails = DNS resolution broken; works = likely a proxy, certificate, or browser-specific issue.</div></div>
+      <div class="fix-step"><span class="num">06</span><div>Check if it's just this device: ask another user nearby, or check if their phone on Wi-Fi has the same problem.</div></div>
+      <div class="fix-step"><span class="num">07</span><div>Re-seat/replace the patch cable and try a different switch port before condemning the NIC.</div></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card" data-searchable data-title="Essential network commands cheat sheet" data-section="Network">
+      <div class="card-title"><span class="ic">⌨</span> Essential CMD/PowerShell commands</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Command</th><th>What it does</th></tr>
+        <tr><td><code>ipconfig /all</code></td><td>Full adapter info: IP, subnet, gateway, DNS, MAC, lease</td></tr>
+        <tr><td><code>ipconfig /release</code></td><td>Drop current DHCP lease</td></tr>
+        <tr><td><code>ipconfig /renew</code></td><td>Request new DHCP lease</td></tr>
+        <tr><td><code>ipconfig /flushdns</code></td><td>Clear local DNS resolver cache</td></tr>
+        <tr><td><code>ping &lt;ip/host&gt;</code></td><td>Test reachability + latency</td></tr>
+        <tr><td><code>ping -t &lt;ip&gt;</code></td><td>Continuous ping (Ctrl+C to stop) — good for spotting intermittent drops</td></tr>
+        <tr><td><code>tracert &lt;host&gt;</code></td><td>Show the hop-by-hop path; find where latency/loss starts</td></tr>
+        <tr><td><code>nslookup &lt;host&gt;</code></td><td>Test DNS resolution directly</td></tr>
+        <tr><td><code>netstat -ano</code></td><td>List active connections + owning process ID (pair with Task Manager "Details" tab)</td></tr>
+        <tr><td><code>arp -a</code></td><td>Show local ARP table (IP↔MAC mappings learned)</td></tr>
+        <tr><td><code>netsh winsock reset</code></td><td>Reset the Winsock catalog (fixes some "no internet despite valid IP" cases) — reboot after</td></tr>
+        <tr><td><code>netsh int ip reset</code></td><td>Reset TCP/IP stack entirely — reboot after</td></tr>
+        <tr><td><code>getmac</code></td><td>Show MAC addresses of all adapters</td></tr>
+        <tr><td><code>route print</code></td><td>Show local routing table</td></tr>
+      </table></div>
+    </div>
+
+    <div class="card" data-searchable data-title="APIPA 169.254 address troubleshooting DHCP" data-section="Network">
+      <div class="card-title"><span class="ic">🚫</span> IP is 169.254.x.x (APIPA / no DHCP)</div>
+      <div class="card-meta">Means the PC never got a lease from a DHCP server</div>
+      <div class="fix">
+        <div class="fix-step"><span class="num">1</span><div>Re-seat the network cable / toggle Wi-Fi off-on. Sounds dumb, fixes a surprising number of these.</div></div>
+        <div class="fix-step"><span class="num">2</span><div>Run <code>ipconfig /release</code> then <code>ipconfig /renew</code> as admin.</div></div>
+        <div class="fix-step"><span class="num">3</span><div>Check the switch port LED — amber/off vs green/blinking tells you if link is even established at layer 1.</div></div>
+        <div class="fix-step"><span class="num">4</span><div>If it's one port only: move the cable to a known-good port. If that works, the original port or its run is bad.</div></div>
+        <div class="fix-step"><span class="num">5</span><div>Confirm the switch port isn't in a dead/disabled VLAN, or that the DHCP scope on that VLAN isn't exhausted (ask network team to check scope utilization).</div></div>
+        <div class="fix-step"><span class="num">6</span><div>For Wi-Fi: forget the network and rejoin, and confirm the device isn't stuck on a captive portal needing re-auth.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Wifi connects no internet limited connectivity" data-section="Network">
+    <div class="card-title"><span class="ic">📡</span> Wi-Fi connected but "No internet" / limited connectivity</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Forget the Wi-Fi network and reconnect with the password — clears a stale/corrupt profile, the #1 cause.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Check if other devices on the <b>same AP</b> have internet — isolates AP/uplink vs. single-device issue.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Update the Wi-Fi adapter driver — outdated drivers commonly mishandle DHCP/DNS on enterprise WPA2-Enterprise networks.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Disable then re-enable the adapter in Device Manager.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>If 2.4GHz works but 5GHz doesn't (or vice versa), it's an AP/band/channel issue — try forcing the other band temporarily.</div></div>
+      <div class="fix-step"><span class="num">6</span><div>Check for a MAC filtering / NAC (network access control) policy if it's a new or replaced device that's never connected before.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Slow network performance troubleshooting" data-section="Network">
+    <div class="card-title"><span class="ic">🐢</span> Slow network / intermittent drops</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Run <code>ping -t</code> to the gateway for a few minutes while reproducing — look for spikes or timeouts, not just average latency.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Check Device Manager for the NIC — yellow warning icon or "this device is having problems" = driver issue.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>On a wired connection, check duplex/speed mismatch: NIC properties → Configure → Speed &amp; Duplex — should be "Auto Negotiation," forcing it usually causes more problems than it solves unless matching a known-misbehaving switch port.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Bad/marginal cable is extremely common for "intermittent" issues specifically — swap the patch cable before deep diagnostics.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Check for a flapping port on the switch side (ask network team for port error counters: CRC errors, collisions).</div></div>
+      <div class="fix-step"><span class="num">6</span><div>Rule out bandwidth hogs locally: Task Manager → Performance → check if backup/sync software (OneDrive, Backup agents) is saturating the link.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="VPN connection issues" data-section="Network">
+    <div class="card-title"><span class="ic">🔒</span> VPN won't connect / drops</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Confirm base internet works first (VPN rides on top of it — don't troubleshoot VPN on a dead connection).</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Check system clock/date — large clock drift breaks certificate-based VPN auth (common after a dead CMOS battery, see Hardware section).</div></div>
+      <div class="fix-step"><span class="num">3</span><div>If on a hotel/public/guest Wi-Fi: some block the VPN's required ports (often UDP 500/4500 for IPsec, or TCP 443 for SSL VPN) — try mobile hotspot to confirm.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Restart the VPN client service, then try a clean reinstall if it persists — corrupted virtual adapter config is common after Windows updates.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Double-NAT or home router VPN passthrough settings can block site-to-site IPsec — check if disabling "VPN passthrough" weirdly fixes it (router bug, but it happens).</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Ethernet cable connected no link light" data-section="Network">
+    <div class="card-title"><span class="ic">🔗</span> Cable plugged in, no link light / "unidentified network"</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>No link light at all on either end = bad cable, bad port, or disabled port. Swap cable first — cheapest test.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>"Unidentified network" with a link light = layer 1 is fine but DHCP/layer 3 failed — go to DHCP/APIPA flow above.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Check the adapter isn't disabled in Device Manager or via a physical Wi-Fi/Ethernet toggle/function key on the laptop.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Docking stations: re-seat the dock fully, and check the dock's Ethernet works for another laptop to isolate dock vs. laptop NIC.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sec-cabling" data-nav-section="cabling">
+  <div class="section-head"><span class="section-num">03</span><h2>Cabling Tactics</h2></div>
+  <p class="section-sub">Patch cord colors, wiring standards, and the easiest ways to remember pinouts on site.</p>
+
+  <div class="card" data-searchable data-title="Ethernet patch cable color code memory trick" data-section="Cabling">
+    <div class="card-title"><span class="ic">🎨</span> Standard patch cable colors — what they mean (common convention, not a hard rule)</div>
+    <div class="card-meta">Color-coding is a site convention, not an IEEE standard — confirm local convention, but this is the most widely used scheme</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Color</th><th>Typical use</th></tr>
+      <tr><td><span class="tag" style="background:#1f3a1f;color:#7be37b;">●</span> Green</td><td>Standard user workstation drops</td></tr>
+      <tr><td><span class="tag" style="background:#3a2a1a;color:#ffb454;">●</span> Yellow / Orange</td><td>VoIP phones / phone-only drops</td></tr>
+      <tr><td><span class="tag" style="background:#1a2a3a;color:#6fb3ff;">●</span> Blue</td><td>Server-to-switch / patch panel-to-switch links</td></tr>
+      <tr><td><span class="tag" style="background:#2a1a2a;color:#c79bff;">●</span> Purple</td><td>VLAN-tagged or special-purpose links</td></tr>
+      <tr><td><span class="tag" style="background:#3a1a1a;color:#ff6b6b;">●</span> Red</td><td>Critical/restricted infrastructure, security systems</td></tr>
+      <tr><td><span class="tag" style="background:#2a2a2a;color:#e8eaed;">●</span> Grey / White</td><td>Cross-connects, uplinks between switches/racks</td></tr>
+      <tr><td><span class="tag" style="background:#1a1a1a;color:#9aa3ad;">●</span> Black</td><td>Often outdoor-rated / building-to-building runs</td></tr>
+    </table></div>
+    <div class="callout"><span class="clabel">Reality check</span>Every site invents its own scheme. The only universal rule: <b>pick one convention, label it on a sheet near the patch panel, and stay consistent</b>. When in doubt, check existing cabling before introducing a new color.</div>
+  </div>
+
+  <div class="card" data-searchable data-title="T568A T568B wiring standard pinout colors easy method" data-section="Cabling">
+    <div class="card-title"><span class="ic">🧷</span> RJ45 wiring standards — T568A vs T568B</div>
+    <div class="card-meta">The easiest method: memorize <b>"Green and Orange swap places, everything else is identical."</b></div>
+    <div class="grid2">
+      <div>
+        <div style="font-family:var(--mono); color:var(--amber); font-size:12px; margin-bottom:8px;">T568B (most common in the US / most offices)</div>
+        <div class="wire-row"><span class="wire-pin">Pin 1</span><span class="wire-swatch" style="background:linear-gradient(90deg,#fff 50%,#ff8c2a 50%)"></span><span class="wire-label">White/Orange</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 2</span><span class="wire-swatch" style="background:#ff8c2a"></span><span class="wire-label">Orange</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 3</span><span class="wire-swatch" style="background:linear-gradient(90deg,#fff 50%,#3fae3f 50%)"></span><span class="wire-label">White/Green</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 4</span><span class="wire-swatch" style="background:#3a5fd0"></span><span class="wire-label">Blue</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 5</span><span class="wire-swatch" style="background:linear-gradient(90deg,#fff 50%,#3a5fd0 50%)"></span><span class="wire-label">White/Blue</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 6</span><span class="wire-swatch" style="background:#3fae3f"></span><span class="wire-label">Green</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 7</span><span class="wire-swatch" style="background:linear-gradient(90deg,#fff 50%,#8b5a2b 50%)"></span><span class="wire-label">White/Brown</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 8</span><span class="wire-swatch" style="background:#8b5a2b"></span><span class="wire-label">Brown</span></div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono); color:var(--blue); font-size:12px; margin-bottom:8px;">T568A (US gov / some legacy + residential)</div>
+        <div class="wire-row"><span class="wire-pin">Pin 1</span><span class="wire-swatch" style="background:linear-gradient(90deg,#fff 50%,#3fae3f 50%)"></span><span class="wire-label">White/Green</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 2</span><span class="wire-swatch" style="background:#3fae3f"></span><span class="wire-label">Green</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 3</span><span class="wire-swatch" style="background:linear-gradient(90deg,#fff 50%,#ff8c2a 50%)"></span><span class="wire-label">White/Orange</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 4</span><span class="wire-swatch" style="background:#3a5fd0"></span><span class="wire-label">Blue</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 5</span><span class="wire-swatch" style="background:linear-gradient(90deg,#fff 50%,#3a5fd0 50%)"></span><span class="wire-label">White/Blue</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 6</span><span class="wire-swatch" style="background:#ff8c2a"></span><span class="wire-label">Orange</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 7</span><span class="wire-swatch" style="background:linear-gradient(90deg,#fff 50%,#8b5a2b 50%)"></span><span class="wire-label">White/Brown</span></div>
+        <div class="wire-row"><span class="wire-pin">Pin 8</span><span class="wire-swatch" style="background:#8b5a2b"></span><span class="wire-label">Brown</span></div>
+      </div>
+    </div>
+    <div class="callout tip"><span class="clabel">Memory trick</span>Say it as a chant: <b>"Orange, Orange, Green, Blue, Blue, Green, Brown, Brown"</b> for T568B pins 1-8 (stripe/solid pairs share the color). Blue and Brown pairs never move between standards — only Orange and Green swap.</div>
+    <div class="callout"><span class="clabel">Rule of thumb</span>Use <b>the same standard on both ends</b> for a straight-through cable (T568B↔T568B). Only mix A on one end and B on the other if you intentionally want a <b>crossover cable</b> (rarely needed now — modern NICs auto-sense, so straight-through cables work almost everywhere, including PC-to-PC).</div>
+  </div>
+
+  <div class="card" data-searchable data-title="Crimping RJ45 connector steps tools" data-section="Cabling">
+    <div class="card-title"><span class="ic">🛠</span> Crimping an RJ45 connector — step by step</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Strip ~1.5cm (½–¾") of outer jacket with the crimper's stripper or a cable stripper. Don't nick the inner conductors.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Untwist the 4 pairs, straighten the 8 wires, and arrange in order per T568A or T568B (decide standard <i>before</i> you start, match both ends).</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Trim all 8 wires flat and even, leaving about 1.3cm (½") straight before the jacket.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Slide wires into the RJ45 plug, copper-side up/facing the clip side, fully seated against the front — jacket should also slide in slightly past the crimp point for strain relief.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Verify wire order through the clear plastic before crimping — this is the step everyone skips and regrets.</div></div>
+      <div class="fix-step"><span class="num">6</span><div>Insert into crimper and squeeze firmly until it clicks/bottoms out. This seats the pins through the insulation and locks strain relief.</div></div>
+      <div class="fix-step"><span class="num">7</span><div>Test with a cable tester before deploying — wire-map test catches reversed pairs, opens, and shorts in seconds.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Cable categories cat5e cat6 cat6a comparison" data-section="Cabling">
+    <div class="card-title"><span class="ic">📏</span> Cable categories at a glance</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Category</th><th>Max speed</th><th>Max distance (rated speed)</th><th>Notes</th></tr>
+      <tr><td>Cat5</td><td>100 Mbps</td><td>100m</td><td>Obsolete, avoid for new runs</td></tr>
+      <tr><td>Cat5e</td><td>1 Gbps</td><td>100m</td><td>Still common, fine for most desktop drops</td></tr>
+      <tr><td>Cat6</td><td>1 Gbps (10Gbps up to 55m)</td><td>100m / 37-55m at 10G</td><td>Good general office standard today</td></tr>
+      <tr><td>Cat6a</td><td>10 Gbps</td><td>100m</td><td>Thicker, better shielding, future-proof choice</td></tr>
+      <tr><td>Cat7 / Cat8</td><td>10-40 Gbps</td><td>100m / shorter at 40G</td><td>Data center / very short high-speed runs</td></tr>
+    </table></div>
+    <div class="callout"><span class="clabel">Rule of thumb</span>For a typical office desktop or VoIP phone drop, <b>Cat6 is the current sweet spot</b> — cheap enough, fast enough, and handles PoE well. Use Cat6a for anything that might need 10GbE later (server racks, future-proofed risers).</div>
+  </div>
+
+  <div class="card" data-searchable data-title="Cable tester how to use wiremap" data-section="Cabling">
+    <div class="card-title"><span class="ic">🔍</span> Using a cable tester (wire-map test)</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Plug the main unit into one end, the remote/terminator into the other.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Run the test — it lights up pins 1-8 in sequence on both ends.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Sequential 1-2-3-4-5-6-7-8 on both ends = good straight-through cable.</div></div>
+      <div class="fix-step"><span class="num">4</span><div><b>Split pairs</b> (e.g. 1-2 lights up out of order) will often still "work" for basic connectivity but cause crosstalk and intermittent errors under load — always re-terminate, don't just shrug it off.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>"Open" on a pin = broken/missing connection at one end — re-crimp that end.</div></div>
+      <div class="fix-step"><span class="num">6</span><div>"Short" between two pins = wires touching inside the connector — re-crimp, check for jacket strip damage.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Cable management labeling best practices" data-section="Cabling">
+    <div class="card-title"><span class="ic">🏷</span> Labeling &amp; management — habits that save future-you</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">•</span><div>Label both ends of every cable run with the same ID (e.g. matching patch panel port + wall jack number).</div></div>
+      <div class="fix-step"><span class="num">•</span><div>Keep a simple spreadsheet/photo of the patch panel-to-switch port mapping — saves hours during outages.</div></div>
+      <div class="fix-step"><span class="num">•</span><div>Velcro ties, not zip ties, in racks — zip ties deform cable jackets over time and are a pain to redo.</div></div>
+      <div class="fix-step"><span class="num">•</span><div>Don't exceed the cable's bend radius (roughly 4x the cable diameter) — tight bends behind patch panels are a classic source of mystery packet loss.</div></div>
+      <div class="fix-step"><span class="num">•</span><div>Keep copper data cable away from running parallel too close to power cable for long stretches — induced interference is real at scale (it's a non-issue for a 1.5m desk patch cord).</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sec-cameras" data-nav-section="cameras">
+  <div class="section-head"><span class="section-num">04</span><h2>IP Cameras &amp; IP Phones</h2></div>
+  <p class="section-sub">Both are network appliances first — most "broken" cameras/phones are actually PoE, VLAN, or DHCP problems.</p>
+
+  <div class="card" data-searchable data-title="IP camera offline no video troubleshooting" data-section="Cameras & Phones">
+    <div class="card-title"><span class="ic">📷</span> IP camera offline / no video feed</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Check the physical LED on the camera (if present) — solid/blinking patterns usually indicate link and PoE status; consult the model's LED legend.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Confirm PoE is actually being delivered: check the switch port's PoE status (most managed switches show per-port PoE draw in their web UI/CLI) — a camera pulling 0W means no power, not a video software issue.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Ping the camera's IP. No reply + PoE confirmed = the camera itself may have crashed; power-cycle by disabling/re-enabling the switch port (avoids unplugging in tight spots).</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Confirm it's on the correct VLAN — cameras are very often segmented onto a dedicated surveillance VLAN, and a misconfigured port (wrong/missing VLAN tag) silently kills connectivity even though link lights look fine.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Check the NVR/VMS software itself: is it just one camera tile gone grey, or all of them? All-down points to NVR/recording server or network core, not the individual camera.</div></div>
+      <div class="fix-step"><span class="num">6</span><div>If reachable by ping but the stream won't load, check the camera's RTSP/HTTP port isn't blocked by an ACL/firewall rule that changed recently.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="PoE not working power over ethernet" data-section="Cameras & Phones">
+    <div class="card-title"><span class="ic">⚡</span> PoE basics &amp; troubleshooting</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Standard</th><th>Max power at PD</th><th>Typical use</th></tr>
+      <tr><td>802.3af (PoE)</td><td>~12.95W</td><td>Basic IP phones, simple cameras, access points</td></tr>
+      <tr><td>802.3at (PoE+)</td><td>~25.5W</td><td>PTZ cameras, higher-power APs</td></tr>
+      <tr><td>802.3bt (PoE++/UPOE)</td><td>~51-71W</td><td>High-end PTZ, thin clients, large displays</td></tr>
+    </table></div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Confirm the switch port is actually PoE-capable and PoE is enabled (some managed switches let you disable PoE per-port).</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Check total PoE budget on the switch isn't exhausted — adding one more high-draw PTZ camera can tip a switch over its power budget, causing it to refuse power to new devices.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Cable run too long or poor quality cable can cause voltage drop sufficient to make PoE unreliable — stay within rated distance (100m) and use decent quality cable for PoE runs.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>If using a PoE injector instead of a PoE switch port, confirm the injector itself is powered and rated for the device's wattage class.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="IP phone not registering no dial tone" data-section="Cameras & Phones">
+    <div class="card-title"><span class="ic">☎</span> IP phone won't register / no dial tone</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Check the phone's screen for a status/registration message — most IP phones display "Registering," "Unregistered," or a specific error code directly.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Confirm it has an IP address (phone's network/status menu) — same APIPA/DHCP logic as a PC applies.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Confirm it's on the correct voice VLAN — phones usually need a specific VLAN ID pushed via LLDP/CDP from the switch; if that's misconfigured the phone may sit on the wrong (data) VLAN and fail to reach the call manager/SIP server.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Check PoE delivery the same way as cameras above — a phone with a blank screen often simply isn't getting power.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Confirm the call control server (e.g. SIP registrar, Call Manager, 3CX, etc.) shows the extension registered, and check the time/date on the phone — large clock skew breaks SIP digest auth on some systems.</div></div>
+      <div class="fix-step"><span class="num">6</span><div>Factory reset as a last resort if config looks corrupted — but back up/note the extension and any speed dials first.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="IP phone one way audio no audio static" data-section="Cameras & Phones">
+    <div class="card-title"><span class="ic">🔇</span> One-way audio / choppy audio / no audio on calls</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>One-way audio is classically a <b>NAT/firewall RTP traversal</b> issue — media (RTP) and signaling (SIP) take different paths and one is being blocked, especially across VPNs or when calling external numbers.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Choppy/garbled audio on an otherwise fine network = packet loss or jitter on the voice VLAN — check QoS is correctly prioritizing voice traffic, and check for bandwidth contention (someone running a big upload on the same link).</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Check the headset/handset itself isn't the issue — swap headsets, test with handset only.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Confirm correct codec negotiation if it's a SIP trunk issue — mismatched codecs between provider and PBX cause garbled or failed audio on some calls only.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Camera dark night vision blurry image quality" data-section="Cameras & Phones">
+    <div class="card-title"><span class="ic">🌙</span> Camera image quality issues</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Symptom</th><th>Likely cause</th></tr>
+      <tr><td>Image too dark at night</td><td>IR illuminator failed, or IR cut filter stuck — check camera's day/night setting</td></tr>
+      <tr><td>Washed-out / glare at night</td><td>IR reflecting off nearby glass/objects too close to lens, or IR-reflective housing too near dome</td></tr>
+      <tr><td>Blurry image</td><td>Dirty/condensation on lens, focus drifted, dome scratched — clean dome cover first, simplest fix</td></tr>
+      <tr><td>Choppy/low frame rate</td><td>Bandwidth-starved NVR/network, or stream resolution set too high for available bandwidth</td></tr>
+      <tr><td>Color tint / wrong colors</td><td>White balance setting, or fluorescent lighting flicker mismatch</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<section class="section" id="sec-office" data-nav-section="office">
+  <div class="section-head"><span class="section-num">05</span><h2>Microsoft Office Issues</h2></div>
+  <p class="section-sub">Outlook profile corruption and Office activation/licensing account for most repeat tickets.</p>
+
+  <div class="card" data-searchable data-title="Outlook not opening crashing repair" data-section="Office">
+    <div class="card-title"><span class="ic">📧</span> Outlook won't open / crashes on launch</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Launch in safe mode first to isolate add-ins: hold <kbd>Ctrl</kbd> while clicking Outlook, or run <code>outlook.exe /safe</code> from Run.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>If safe mode works fine, a faulty add-in is the cause — File → Options → Add-ins → manage COM Add-ins → disable all, re-enable one at a time.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Repair the Office installation: Control Panel → Programs → Microsoft Office → Change → <b>Quick Repair</b> first, <b>Online Repair</b> if that doesn't fix it.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Corrupted profile is common after a bad shutdown — create a new Outlook profile: Control Panel → Mail (Microsoft Outlook) → Show Profiles → Add, then set as default.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Run <code>outlook.exe /resetnavpane</code> to fix a corrupted navigation pane (folder list disappeared/frozen).</div></div>
+      <div class="fix-step"><span class="num">6</span><div>For "something went wrong" generic crash loops, check for a corrupted .OST file — close Outlook, rename the .OST in <code>%localappdata%\Microsoft\Outlook</code>, let Outlook rebuild it on next launch (this re-downloads mail, can take a while on large mailboxes).</div></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card" data-searchable data-title="Outlook send receive errors stuck outbox" data-section="Office">
+      <div class="card-title"><span class="ic">📤</span> Mail stuck in Outbox / send-receive errors</div>
+      <div class="fix">
+        <div class="fix-step"><span class="num">1</span><div>Check the message itself isn't oversized (attachment over org/mailbox limit) — split into smaller files or use a cloud link instead.</div></div>
+        <div class="fix-step"><span class="num">2</span><div>Send/Receive → Update Folder, and check the error code shown in Send/Receive Progress for specifics.</div></div>
+        <div class="fix-step"><span class="num">3</span><div>Disable any antivirus/DLP add-in temporarily to rule out it intercepting and blocking the send silently.</div></div>
+        <div class="fix-step"><span class="num">4</span><div>Check Outlook isn't in <b>Work Offline</b> mode (Send/Receive tab, toggle).</div></div>
+      </div>
+    </div>
+
+    <div class="card" data-searchable data-title="Outlook search not working not finding emails" data-section="Office">
+      <div class="card-title"><span class="ic">🔎</span> Outlook search not returning results</div>
+      <div class="fix">
+        <div class="fix-step"><span class="num">1</span><div>Check the search scope dropdown — it may be set to "Current Folder" instead of "All Mailboxes/All Outlook Items."</div></div>
+        <div class="fix-step"><span class="num">2</span><div>Rebuild the Windows Search index: Control Panel → Indexing Options → Advanced → Rebuild. Can take hours on a large mailbox — warn the user.</div></div>
+        <div class="fix-step"><span class="num">3</span><div>Confirm Outlook is included in the indexed locations list (Indexing Options → Modify).</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Office activation license error not genuine" data-section="Office">
+    <div class="card-title"><span class="ic">🔑</span> Office activation / licensing errors</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Check sign-in account: File → Account in any Office app — confirm it's signed in with the correct work/school account, not a personal Microsoft account.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>"Unlicensed Product" banner: usually a temporary token expiry — sign out and back in, or run <code>ospp.vbs /act</code> from the Office install directory (admin CMD) to force re-activation against the KMS/online licensing service.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Confirm the user actually has an assigned Microsoft 365 license in the admin portal — licenses can be unassigned during offboarding/role changes by mistake.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Multiple Office versions installed (e.g. leftover 2016 + new 365) commonly cause activation conflicts — fully uninstall old versions using the Microsoft Support and Recovery Assistant (SaRA) tool before reinstalling.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Excel file corrupted not opening calculation slow" data-section="Office">
+    <div class="card-title"><span class="ic">📊</span> Excel issues</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Symptom</th><th>Fix</th></tr>
+      <tr><td>File won't open / "corrupt" error</td><td>File → Open → browse to file → click dropdown next to Open → <b>Open and Repair</b></td></tr>
+      <tr><td>Extremely slow / freezes on edit</td><td>Check for excessive conditional formatting rules, volatile formulas (NOW, RAND, OFFSET), or huge unused ranges — Ctrl+End to check actual used range vs. expected</td></tr>
+      <tr><td>Formulas show as text / not calculating</td><td>Cell format set to "Text" before the formula was typed — reformat cell to General/Number, then re-enter the formula</td></tr>
+      <tr><td>Circular reference warning</td><td>Formulas → Error Checking → Circular References to jump to the offending cell</td></tr>
+      <tr><td>#REF!, #N/A, #VALUE! errors</td><td>#REF = deleted referenced cell; #N/A = lookup value not found; #VALUE = wrong data type in a formula argument</td></tr>
+      <tr><td>AutoSave / co-authoring conflicts</td><td>File must be saved to OneDrive/SharePoint for AutoSave/co-authoring — local-only files can't use it</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card" data-searchable data-title="Word document issues track changes formatting" data-section="Office">
+    <div class="card-title"><span class="ic">📝</span> Word issues</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Symptom</th><th>Fix</th></tr>
+      <tr><td>Strange formatting marks everywhere</td><td>Toggle "Show/Hide ¶" (Ctrl+Shift+8) — it's a display toggle, not actual formatting</td></tr>
+      <tr><td>Track Changes marks won't go away</td><td>Review tab → make sure "All Markup" isn't selected if reviewing only; Accept/Reject all changes if document is final</td></tr>
+      <tr><td>Document won't open / corrupted</td><td>Open and Repair (same as Excel); if that fails, try opening in WordPad or via "Open as text" to salvage raw content</td></tr>
+      <tr><td>Slow scrolling/typing in long docs</td><td>Disable real-time grammar/spelling check temporarily, check for excessive tracked changes history, embedded high-res images (compress them)</td></tr>
+      <tr><td>Mail merge not working</td><td>Confirm data source (Excel/Outlook list) field names match merge fields exactly; reconnect data source if file moved</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card" data-searchable data-title="Office 365 sign in issues credentials keep prompting" data-section="Office">
+    <div class="card-title"><span class="ic">🔁</span> Office keeps prompting for credentials repeatedly</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Open <b>Credential Manager</b> (Control Panel) → Windows Credentials → remove any saved entries related to Office/Outlook/OneDrive, then sign in fresh.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Check for an expired or changed password not yet updated in cached credentials — common right after a forced password reset.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Conditional Access / MFA policy changes on the tenant side can also trigger repeated prompts — check with the M365 admin if this is happening org-wide.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Modern Authentication must be enabled tenant-wide for some sign-in flows to behave — note for escalation if this is widespread, not single-user.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="OneDrive sync issues not syncing icon problems" data-section="Office">
+    <div class="card-title"><span class="ic">☁</span> OneDrive sync problems</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Click the OneDrive cloud icon in the tray — it shows current sync status and specific errors directly, check there first.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Pause and resume sync (right-click tray icon) — clears many transient stuck-sync states.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Look for files with a red "x" or sync-pending icon — usually a filename issue (illegal characters: <code>\ / : * ? " &lt; &gt; |</code>), a file open elsewhere, or path length over 400 characters.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>If broadly broken: unlink the account (Settings → Account → Unlink this PC) then sign back in — rebuilds sync state from scratch.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Check available disk space — OneDrive silently stops syncing new files when local disk is nearly full.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sec-hardware" data-nav-section="hardware">
+  <div class="section-head"><span class="section-num">06</span><h2>PC Hardware Issues</h2></div>
+  <p class="section-sub">The most common desk-side hardware tickets, ranked by frequency.</p>
+
+  <div class="card" data-searchable data-title="PC wont turn on no power troubleshooting" data-section="Hardware">
+    <div class="card-title"><span class="ic">⚡</span> PC won't power on at all</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Check the wall outlet and power cable with a known-good device/cable — dead outlets and frayed cables are extremely common and instantly solve the "ticket."</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Check the PSU's physical switch (back of desktop case) is in the ON (1) position, not OFF (0).</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Listen/look for any sign of life — fans spinning briefly, lights flickering, then dying = PSU or short, vs. truly nothing = check power delivery first.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Laptops: remove battery if removable, hold power button 30s with everything unplugged, then try AC-only with no battery — isolates a swollen/dead battery from a charging circuit issue.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Desktop: disconnect all peripherals and non-essential internal components (extra RAM stick, GPU if onboard video exists) and try a minimal boot — isolates a short caused by a failing component.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Blue screen of death BSOD common errors" data-section="Hardware">
+    <div class="card-title"><span class="ic">🟦</span> Blue Screen of Death (BSOD) — common codes</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Stop code</th><th>Usual cause</th></tr>
+      <tr><td><code>MEMORY_MANAGEMENT</code></td><td>Faulty RAM, or driver corrupting memory — run Windows Memory Diagnostic / memtest86</td></tr>
+      <tr><td><code>IRQL_NOT_LESS_OR_EQUAL</code></td><td>Bad driver, often network or storage driver — boot to safe mode, roll back/update the driver</td></tr>
+      <tr><td><code>DRIVER_IRQL_NOT_LESS_OR_EQUAL</code></td><td>Same as above — specific driver named in the error if shown</td></tr>
+      <tr><td><code>PAGE_FAULT_IN_NONPAGED_AREA</code></td><td>RAM, storage, or driver issue — check disk health (chkdsk) and RAM</td></tr>
+      <tr><td><code>CRITICAL_PROCESS_DIED</code></td><td>Core system file corruption — run <code>sfc /scannow</code> and <code>DISM /Online /Cleanup-Image /RestoreHealth</code></td></tr>
+      <tr><td><code>UNMOUNTABLE_BOOT_VOLUME</code></td><td>Boot drive corruption/failing drive — check disk health urgently, may need recovery from boot media</td></tr>
+      <tr><td><code>WHEA_UNCORRECTABLE_ERROR</code></td><td>Often hardware-level — failing RAM, CPU, or overheating; check temps and run memory test</td></tr>
+      <tr><td><code>VIDEO_TDR_FAILURE</code></td><td>GPU driver crash/timeout — update or roll back GPU driver, check for overheating</td></tr>
+    </table></div>
+    <div class="callout"><span class="clabel">Quick diagnostic</span>Open <b>Event Viewer → Windows Logs → System</b>, filter for Critical/Error around the crash timestamp — the BugCheck event usually names the exact faulting driver/module.</div>
+  </div>
+
+  <div class="card" data-searchable data-title="PC slow performance troubleshooting" data-section="Hardware">
+    <div class="card-title"><span class="ic">🐌</span> PC running slow — triage order</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Open Task Manager → Performance tab. Check CPU, Memory, Disk usage at a glance — whichever is pegged near 100% tells you where to focus.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Disk at 100% with low CPU/memory = classic sign of a failing or near-full HDD/SSD, or a misbehaving background process (check Task Manager → Disk column, sort descending).</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Check Startup tab (Task Manager) for excessive startup apps — disable non-essential ones.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Check free disk space — Windows gets noticeably sluggish below roughly 10-15% free space on the boot drive (paging file and temp space get squeezed).</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Check for pending Windows Updates stuck installing in the background, or a full antivirus scan running unexpectedly.</div></div>
+      <div class="fix-step"><span class="num">6</span><div>Check drive health: run <code>wmic diskdrive get status</code> or use manufacturer SSD/HDD tool — a drive throwing SMART warnings explains "everything is slow" perfectly.</div></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card" data-searchable data-title="PC overheating shutting down random reboots" data-section="Hardware">
+      <div class="card-title"><span class="ic">🌡</span> Overheating / random shutdowns</div>
+      <div class="fix">
+        <div class="fix-step"><span class="num">1</span><div>Check vents aren't blocked (desk clutter, laptop on a soft surface/bed/lap blocking intake).</div></div>
+        <div class="fix-step"><span class="num">2</span><div>Open the case/check fans are spinning — dust buildup on heatsinks/fans is the single most common cause over a device's lifetime.</div></div>
+        <div class="fix-step"><span class="num">3</span><div>Compressed air clean of fans, heatsinks, and vents — do this outdoors/away from the PC, hold fans still while blowing to avoid generating reverse voltage.</div></div>
+        <div class="fix-step"><span class="num">4</span><div>Check thermal paste age on older systems (3+ years) — dried out paste causes gradual thermal throttling/shutdowns under load.</div></div>
+        <div class="fix-step"><span class="num">5</span><div>Monitor temps under load with HWMonitor/HWiNFO — sudden shutdown near 90-100°C CPU confirms thermal protection kicking in.</div></div>
+      </div>
+    </div>
+
+    <div class="card" data-searchable data-title="No display no signal monitor black screen" data-section="Hardware">
+      <div class="card-title"><span class="ic">🖥</span> No display / "No Signal" on monitor</div>
+      <div class="fix">
+        <div class="fix-step"><span class="num">1</span><div>Confirm the monitor is on the correct input source (HDMI1 vs HDMI2 vs DP) — very common false alarm.</div></div>
+        <div class="fix-step"><span class="num">2</span><div>Swap the video cable — cheap and rules out the most common physical-layer cause.</div></div>
+        <div class="fix-step"><span class="num">3</span><div>If a dedicated GPU is installed, confirm the cable is plugged into the <b>GPU</b>, not the motherboard's onboard video port (easy mistake after a GPU upgrade).</div></div>
+        <div class="fix-step"><span class="num">4</span><div>Listen for POST beep codes if available — single beep is normal, patterns of beeps indicate specific hardware faults (consult motherboard manual for the exact pattern).</div></div>
+        <div class="fix-step"><span class="num">5</span><div>Reseat the RAM (most common single cause of POST failure) — remove, blow out the slot, firmly reseat until clips click.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Battery not charging laptop charging issues" data-section="Hardware">
+    <div class="card-title"><span class="ic">🔋</span> Laptop battery won't charge / drains fast</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Check the charging brick and cable on another laptop if possible — chargers fail more often than the laptop's charging circuit.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Check Windows Battery Report for wear level: run <code>powercfg /batteryreport</code> in CMD, open the generated HTML — compares Design Capacity vs Full Charge Capacity to show real degradation %.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Update chipset/battery drivers — Device Manager → Batteries, and check OEM power management software is current.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>"Plugged in, not charging" stuck at a fixed percentage is often a Windows battery driver glitch — uninstall the "Microsoft ACPI-Compliant Control Method Battery" device in Device Manager and let Windows reinstall it on reboot.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Physically swollen battery = stop using immediately, flag for hardware replacement — fire/safety risk, don't just note it for later.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="CMOS battery clock reset BIOS settings lost" data-section="Hardware">
+    <div class="card-title"><span class="ic">🕐</span> Clock keeps resetting / BIOS settings don't save</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Classic sign of a dead <b>CMOS battery</b> (small coin cell on the motherboard, usually CR2032).</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Replace the CMOS battery — cheap, common, and fixes random BIOS resets, wrong clock causing cert/VPN failures, and "boot device not found" after power loss in one shot.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>After replacing, re-enter any custom BIOS settings (boot order, virtualization toggle, etc.) since they reset to default.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Hard drive failing SMART errors disk health" data-section="Hardware">
+    <div class="card-title"><span class="ic">💾</span> Failing hard drive / SSD — warning signs</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Sign</th><th>Meaning</th></tr>
+      <tr><td>Clicking/grinding noise (HDD)</td><td>Mechanical failure imminent — back up immediately, this is urgent</td></tr>
+      <tr><td>Frequent freezes during file access</td><td>Bad sectors or failing controller — check SMART status</td></tr>
+      <tr><td>"S.M.A.R.T. failure imminent" at boot</td><td>Drive is reporting its own pending failure — back up now, schedule replacement</td></tr>
+      <tr><td>Files randomly corrupting</td><td>Failing sectors silently corrupting writes — back up and replace</td></tr>
+      <tr><td>Very slow boot, fine once loaded</td><td>Could simply be a slow HDD vs SSD expectation — but check SMART to rule out failure first</td></tr>
+    </table></div>
+    <div class="callout danger"><span class="clabel">Priority rule</span>Any SMART warning or unusual drive noise = <b>back up data before further troubleshooting</b>, not after. Drives showing warning signs can fail completely within hours to weeks.</div>
+  </div>
+
+  <div class="card" data-searchable data-title="USB device not recognized port not working" data-section="Hardware">
+    <div class="card-title"><span class="ic">🔌</span> USB device not recognized / USB port not working</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Try a different USB port, and a different known-good device in the same port — isolates port vs. device.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Check Device Manager for a yellow warning triangle or "Unknown Device" — right-click → Update Driver, or uninstall and re-plug to force redetection.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Disable USB selective suspend in Power Options (Advanced settings) — known to cause devices to drop out intermittently, especially on laptops.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>For USB-C docks: confirm the dock's own firmware/drivers are current, and that the laptop's USB-C port supports the dock's full feature set (some ports are charge-only or data-only).</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Keyboard mouse not working troubleshooting" data-section="Hardware">
+    <div class="card-title"><span class="ic">⌨</span> Keyboard / mouse not working</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Wireless: swap/check batteries first, then check the USB receiver is firmly seated (try a different port).</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Bluetooth: remove and re-pair the device — stale pairing is the most common cause of "randomly stopped working."</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Wired: test on another machine if possible to isolate device vs. PC port/driver.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Check for a physical mute/disable switch (some keyboards have a wireless toggle switch on the underside).</div></div>
+      <div class="fix-step"><span class="num">5</span><div>If only some keys fail on a wired keyboard: liquid damage or debris under those specific keys — common, often not user-reported until asked directly.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="RAM memory troubleshooting bad stick test" data-section="Hardware">
+    <div class="card-title"><span class="ic">🧠</span> Suspected bad RAM</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Symptoms: random BSODs, especially MEMORY_MANAGEMENT; random reboots/freezes under load; failure to POST with beep codes.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Run Windows Memory Diagnostic (search "Windows Memory Diagnostic" in Start) or boot Memtest86 from USB for a more thorough pass — leave it running multiple passes overnight for intermittent issues.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>With multiple sticks installed, test one stick at a time in the same slot to isolate which stick (or which slot) is bad.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Reseat all RAM regardless — a surprising number of "bad RAM" tickets are actually just a stick that worked itself slightly loose.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sec-osi" data-nav-section="osi">
+  <div class="section-head"><span class="section-num">07</span><h2>OSI &amp; TCP/IP Models</h2></div>
+  <p class="section-sub">The framework behind every "is it the network or the app" question. Memorize the layer order, and you can localize almost any fault fast.</p>
+
+  <div class="card" data-searchable data-title="OSI model 7 layers explained mnemonic" data-section="OSI / TCP-IP">
+    <div class="card-title"><span class="ic">🧩</span> The OSI Model — 7 layers</div>
+    <div class="card-meta">Mnemonic top-down: "All People Seem To Need Data Processing" · bottom-up: "Please Do Not Throw Sausage Pizza Away"</div>
+    <div class="osi-stack">
+      <div class="osi-layer">
+        <div class="ln">7</div><div class="lname">Application</div>
+        <div><div class="ldesc">What the user/software directly interacts with — the actual network service being used.</div><div class="lex">HTTP, HTTPS, FTP, SMTP, DNS, SSH, RDP</div></div>
+      </div>
+      <div class="osi-layer">
+        <div class="ln">6</div><div class="lname">Presentation</div>
+        <div><div class="ldesc">Translates/formats data: encryption, compression, character encoding between systems.</div><div class="lex">SSL/TLS, JPEG, ASCII, encryption</div></div>
+      </div>
+      <div class="osi-layer">
+        <div class="ln">5</div><div class="lname">Session</div>
+        <div><div class="ldesc">Establishes, manages, and tears down the connection/session between two devices.</div><div class="lex">NetBIOS, PPTP, session tokens, RPC</div></div>
+      </div>
+      <div class="osi-layer">
+        <div class="ln">4</div><div class="lname">Transport</div>
+        <div><div class="ldesc">End-to-end delivery, segmentation, flow control, and error recovery between hosts.</div><div class="lex">TCP (reliable), UDP (fast/no guarantee), ports</div></div>
+      </div>
+      <div class="osi-layer">
+        <div class="ln">3</div><div class="lname">Network</div>
+        <div><div class="ldesc">Logical addressing and routing between different networks — this is where IP addresses live.</div><div class="lex">IP, ICMP, routers, routing tables</div></div>
+      </div>
+      <div class="osi-layer">
+        <div class="ln">2</div><div class="lname">Data Link</div>
+        <div><div class="ldesc">Physical addressing (MAC) and how data is framed/transmitted on the local segment.</div><div class="lex">Ethernet, MAC address, switches, ARP</div></div>
+      </div>
+      <div class="osi-layer">
+        <div class="ln">1</div><div class="lname">Physical</div>
+        <div><div class="ldesc">The actual physical medium: cables, radio signals, voltages, connectors.</div><div class="lex">Cat6 cable, fiber, Wi-Fi radio, hubs, RJ45</div></div>
+      </div>
+    </div>
+    <div class="callout tip"><span class="clabel">Practical use on tickets</span>"No internet" almost always means start checking at <b>Layer 1 (link light?) → Layer 2 (correct VLAN/MAC?) → Layer 3 (got an IP? can you ping the gateway?) → Layer 4 (right port open?) → Layer 7 (does the actual app/site work?)</b>. Walking up the stack in order avoids skipping the obvious cause.</div>
+  </div>
+
+  <div class="card" data-searchable data-title="TCP IP model 4 layers vs OSI comparison" data-section="OSI / TCP-IP">
+    <div class="card-title"><span class="ic">🧱</span> TCP/IP Model — 4 layers (the practical, real-world model)</div>
+    <div class="card-meta">OSI is the teaching model; TCP/IP is what the actual internet runs on. Mapping below.</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>TCP/IP Layer</th><th>Maps to OSI layers</th><th>Examples</th></tr>
+      <tr><td><b>Application</b></td><td>7, 6, 5 (App/Presentation/Session)</td><td>HTTP, HTTPS, DNS, FTP, SMTP, SSH</td></tr>
+      <tr><td><b>Transport</b></td><td>4 (Transport)</td><td>TCP, UDP</td></tr>
+      <tr><td><b>Internet</b></td><td>3 (Network)</td><td>IP, ICMP, ARP*</td></tr>
+      <tr><td><b>Link / Network Access</b></td><td>2, 1 (Data Link/Physical)</td><td>Ethernet, Wi-Fi, MAC addressing, cabling</td></tr>
+    </table></div>
+    <div class="callout"><span class="clabel">Note</span>*ARP is technically a bridge between Layer 2 and 3 — it resolves an IP address (L3) to a MAC address (L2). Don't stress the exact placement; what matters on the job is knowing it's "the thing that maps IP to MAC on the local segment."</div>
+  </div>
+
+  <div class="card" data-searchable data-title="TCP vs UDP differences comparison" data-section="OSI / TCP-IP">
+    <div class="card-title"><span class="ic">⚖</span> TCP vs UDP — when each is used</div>
+    <div class="tbl-wrap"><table>
+      <tr><th></th><th>TCP</th><th>UDP</th></tr>
+      <tr><td>Connection</td><td>Connection-oriented (handshake first)</td><td>Connectionless, just sends</td></tr>
+      <tr><td>Reliability</td><td>Guaranteed delivery, retransmits lost packets</td><td>No guarantee, no retransmission</td></tr>
+      <tr><td>Speed</td><td>Slower (overhead of acknowledgment)</td><td>Faster, lower overhead</td></tr>
+      <tr><td>Order</td><td>Packets arrive in order</td><td>No ordering guarantee</td></tr>
+      <tr><td>Typical use</td><td>Web (HTTP/S), email, file transfer, RDP</td><td>VoIP, video streaming, DNS queries, online gaming</td></tr>
+    </table></div>
+    <div class="callout tip"><span class="clabel">Why this matters on the job</span>Choppy VoIP calls during network congestion are often "expected" behavior of UDP prioritizing speed over reliability — this is exactly why <b>QoS</b> is configured to protect voice traffic specifically, rather than relying on TCP-style retransmission.</div>
+  </div>
+
+  <div class="card" data-searchable data-title="3 way handshake TCP connection SYN ACK" data-section="OSI / TCP-IP">
+    <div class="card-title"><span class="ic">🤝</span> TCP 3-way handshake</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div><b>SYN</b> — client sends a synchronize request to the server to initiate a connection.</div></div>
+      <div class="fix-step"><span class="num">2</span><div><b>SYN-ACK</b> — server acknowledges and sends its own synchronize request back.</div></div>
+      <div class="fix-step"><span class="num">3</span><div><b>ACK</b> — client acknowledges the server's request. Connection is now established and data can flow.</div></div>
+    </div>
+    <div class="callout"><span class="clabel">Troubleshooting relevance</span>If a packet capture shows SYN sent but no SYN-ACK returned, the destination port is likely blocked by a firewall somewhere in the path — not a server application crash.</div>
+  </div>
+
+  <div class="card" data-searchable data-title="IP addressing classes subnetting CIDR basics" data-section="OSI / TCP-IP">
+    <div class="card-title"><span class="ic">🔢</span> IP addressing &amp; subnetting basics</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>CIDR</th><th>Subnet mask</th><th>Usable hosts</th><th>Common use</th></tr>
+      <tr><td>/24</td><td>255.255.255.0</td><td>254</td><td>Typical office LAN segment</td></tr>
+      <tr><td>/25</td><td>255.255.255.128</td><td>126</td><td>Split office segment</td></tr>
+      <tr><td>/26</td><td>255.255.255.192</td><td>62</td><td>Small department/VLAN</td></tr>
+      <tr><td>/29</td><td>255.255.255.248</td><td>6</td><td>Small point-to-point/server cluster</td></tr>
+      <tr><td>/30</td><td>255.255.255.252</td><td>2</td><td>Point-to-point link (router to router)</td></tr>
+    </table></div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Private ranges (RFC 1918)</th><th>Range</th></tr>
+      <tr><td>Class A private</td><td>10.0.0.0 – 10.255.255.255</td></tr>
+      <tr><td>Class B private</td><td>172.16.0.0 – 172.31.255.255</td></tr>
+      <tr><td>Class C private</td><td>192.168.0.0 – 192.168.255.255</td></tr>
+      <tr><td>Link-local (APIPA)</td><td>169.254.0.0 – 169.254.255.255</td></tr>
+      <tr><td>Loopback</td><td>127.0.0.0 – 127.255.255.255 (127.0.0.1 = localhost)</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<section class="section" id="sec-ports" data-nav-section="ports">
+  <div class="section-head"><span class="section-num">08</span><h2>Common Ports &amp; Protocols</h2></div>
+  <p class="section-sub">The reference table you'll come back to constantly when troubleshooting blocked services or firewall rules.</p>
+
+  <div class="card" data-searchable data-title="Common port numbers list TCP UDP reference table" data-section="Ports & Protocols">
+    <div class="card-title"><span class="ic">🚪</span> Common ports reference</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Port</th><th>Protocol</th><th>Service</th></tr>
+      <tr><td>20 / 21</td><td>TCP</td><td>FTP (data / control)</td></tr>
+      <tr><td>22</td><td>TCP</td><td>SSH (secure remote login)</td></tr>
+      <tr><td>23</td><td>TCP</td><td>Telnet (unencrypted, avoid)</td></tr>
+      <tr><td>25</td><td>TCP</td><td>SMTP (mail sending)</td></tr>
+      <tr><td>53</td><td>TCP/UDP</td><td>DNS</td></tr>
+      <tr><td>67 / 68</td><td>UDP</td><td>DHCP (server / client)</td></tr>
+      <tr><td>69</td><td>UDP</td><td>TFTP</td></tr>
+      <tr><td>80</td><td>TCP</td><td>HTTP (unencrypted web)</td></tr>
+      <tr><td>110</td><td>TCP</td><td>POP3 (mail retrieval)</td></tr>
+      <tr><td>123</td><td>UDP</td><td>NTP (time sync)</td></tr>
+      <tr><td>135</td><td>TCP</td><td>Windows RPC (remote procedure call)</td></tr>
+      <tr><td>137-139</td><td>TCP/UDP</td><td>NetBIOS (legacy Windows file/print sharing)</td></tr>
+      <tr><td>143</td><td>TCP</td><td>IMAP (mail retrieval, syncs server-side)</td></tr>
+      <tr><td>161 / 162</td><td>UDP</td><td>SNMP (network device monitoring)</td></tr>
+      <tr><td>389</td><td>TCP/UDP</td><td>LDAP (directory services / Active Directory)</td></tr>
+      <tr><td>443</td><td>TCP</td><td>HTTPS (encrypted web)</td></tr>
+      <tr><td>445</td><td>TCP</td><td>SMB (Windows file sharing)</td></tr>
+      <tr><td>465 / 587</td><td>TCP</td><td>SMTPS / SMTP with STARTTLS</td></tr>
+      <tr><td>500 / 4500</td><td>UDP</td><td>IPsec VPN (IKE / NAT-T)</td></tr>
+      <tr><td>514</td><td>UDP</td><td>Syslog</td></tr>
+      <tr><td>587</td><td>TCP</td><td>SMTP submission (modern mail sending)</td></tr>
+      <tr><td>636</td><td>TCP</td><td>LDAPS (LDAP over SSL)</td></tr>
+      <tr><td>993</td><td>TCP</td><td>IMAPS</td></tr>
+      <tr><td>995</td><td>TCP</td><td>POP3S</td></tr>
+      <tr><td>1433</td><td>TCP</td><td>Microsoft SQL Server</td></tr>
+      <tr><td>1723</td><td>TCP</td><td>PPTP VPN (legacy, weak — avoid)</td></tr>
+      <tr><td>3268 / 3269</td><td>TCP</td><td>Global Catalog (AD) / GC over SSL</td></tr>
+      <tr><td>3306</td><td>TCP</td><td>MySQL</td></tr>
+      <tr><td>3389</td><td>TCP</td><td>RDP (Remote Desktop)</td></tr>
+      <tr><td>5060 / 5061</td><td>TCP/UDP</td><td>SIP (VoIP signaling) / SIP over TLS</td></tr>
+      <tr><td>5900</td><td>TCP</td><td>VNC</td></tr>
+      <tr><td>8080</td><td>TCP</td><td>HTTP alternate (common proxy/app port)</td></tr>
+      <tr><td>9100</td><td>TCP</td><td>RAW network printing (most printers)</td></tr>
+    </table></div>
+    <div class="callout"><span class="clabel">Quick test</span>Use <code>Test-NetConnection -ComputerName &lt;host&gt; -Port &lt;port&gt;</code> in PowerShell to check if a specific port is reachable from a Windows machine — much faster than guessing why "the app" doesn't connect.</div>
+  </div>
+
+  <div class="card" data-searchable data-title="DNS record types A CNAME MX explained" data-section="Ports & Protocols">
+    <div class="card-title"><span class="ic">📛</span> DNS record types</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Record</th><th>Purpose</th></tr>
+      <tr><td>A</td><td>Maps a hostname to an IPv4 address</td></tr>
+      <tr><td>AAAA</td><td>Maps a hostname to an IPv6 address</td></tr>
+      <tr><td>CNAME</td><td>Alias — points one hostname to another hostname</td></tr>
+      <tr><td>MX</td><td>Mail exchange — where email for the domain should be delivered</td></tr>
+      <tr><td>TXT</td><td>Free-text record — commonly used for SPF/domain verification</td></tr>
+      <tr><td>NS</td><td>Specifies the authoritative name servers for a domain</td></tr>
+      <tr><td>PTR</td><td>Reverse lookup — IP address back to hostname</td></tr>
+      <tr><td>SRV</td><td>Service location record — used by things like SIP, Active Directory</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<section class="section" id="sec-windows" data-nav-section="windows">
+  <div class="section-head"><span class="section-num">09</span><h2>Windows, Accounts &amp; Active Directory</h2></div>
+  <p class="section-sub">Login and account lockout tickets are some of the highest-volume tickets at any helpdesk — fast, confident handling here matters.</p>
+
+  <div class="card" data-searchable data-title="Account locked out Active Directory unlock" data-section="Windows / AD">
+    <div class="card-title"><span class="ic">🔐</span> Account locked out</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Unlock via Active Directory Users and Computers (ADUC): find the user → right-click → Properties → Account tab → uncheck "Account is locked out," or right-click → Unlock account.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Ask if they recently changed their password — old cached credentials on a phone (ActiveSync/Outlook mobile) or a mapped drive retrying the old password repeatedly is the #1 cause of repeat lockouts.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Check Event Viewer on the Domain Controller (Security log, Event ID 4740) to find the source machine triggering the lockout — invaluable for repeat lockouts that keep recurring within minutes of unlocking.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Common repeat offenders: a forgotten RDP session elsewhere, a scheduled task running under the old credentials, or a saved password in a phone's email/Wi-Fi profile.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Password reset forgot password procedure" data-section="Windows / AD">
+    <div class="card-title"><span class="ic">🔑</span> Password reset</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Verify identity per your org's policy before resetting — this is a classic social engineering target, don't skip verification because someone sounds urgent or important.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Reset in ADUC or Microsoft 365 admin center, check "User must change password at next logon" unless org policy says otherwise.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>If the user is remote and not on VPN, a domain password reset won't sync to a cached Windows login until they connect to VPN or use "Other user" with the new credentials over VPN first — warn them, this trips people up constantly.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>If using Azure AD/Entra ID with password writeback (hybrid), confirm sync has completed (can take a few minutes) before telling the user to try again.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Slow login profile loading takes long time" data-section="Windows / AD">
+    <div class="card-title"><span class="ic">⏳</span> Slow logon / "Welcome" screen hangs</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Roaming/mandatory profiles with large redirected folders (Desktop, Documents) hang while syncing at login — check folder redirection settings and actual folder sizes.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Slow or unreachable Domain Controller causes long Group Policy processing — check network path to DC, especially over VPN/site links.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Run <code>gpresult /r</code> to see which GPOs are applying and confirm none are obviously misbehaving (e.g. mapping drives to dead file servers, which will time out on every logon).</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Corrupted local profile — create a new local profile and migrate data, if a specific single user's profile is the issue and others on the same PC log in fine.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Windows update stuck failing troubleshooting" data-section="Windows / AD">
+    <div class="card-title"><span class="ic">🔄</span> Windows Update stuck or failing</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Run the built-in Windows Update troubleshooter (Settings → System → Troubleshoot → Other troubleshooters).</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Restart the Windows Update service: <code>net stop wuauserv</code> then <code>net start wuauserv</code> (admin CMD).</div></div>
+      <div class="fix-step"><span class="num">3</span><div>If consistently failing with the same error code, rename the SoftwareDistribution folder to force a clean re-download: stop the service, rename <code>C:\Windows\SoftwareDistribution</code> to <code>SoftwareDistribution.old</code>, restart service.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Check actual free disk space — updates fail silently/cryptically when there isn't enough room to stage them.</div></div>
+      <div class="fix-step"><span class="num">5</span><div>Run <code>sfc /scannow</code> and <code>DISM /Online /Cleanup-Image /RestoreHealth</code> if corruption is suspected (random update failures across multiple update cycles).</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Mapped network drive not connecting disconnected" data-section="Windows / AD">
+    <div class="card-title"><span class="ic">📁</span> Mapped network drive missing / disconnected (red X)</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Confirm the file server is actually reachable: <code>ping servername</code>, then try <code>\\servername\share</code> directly in Explorer.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Re-enter credentials if the account password recently changed — mapped drives using stored credentials silently fail after a password reset.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>If working on-site but not remote, the share likely isn't reachable without VPN — confirm VPN is connected first.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Re-map manually to confirm: <code>net use Z: \\server\share /persistent:yes</code> in CMD, swap in actual drive letter/path.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sec-extra" data-nav-section="extra">
+  <div class="section-head"><span class="section-num">10</span><h2>Everything Else You'll Need</h2></div>
+  <p class="section-sub">Security basics, remote support tools, keyboard shortcuts, and the escalation checklist that keeps tickets moving.</p>
+
+  <div class="grid2">
+    <div class="card" data-searchable data-title="Windows keyboard shortcuts essential list" data-section="Extras">
+      <div class="card-title"><span class="ic">⌨</span> Essential Windows shortcuts</div>
+      <div class="tbl-wrap"><table>
+        <tr><td><kbd>Win</kbd>+<kbd>L</kbd></td><td>Lock workstation</td></tr>
+        <tr><td><kbd>Win</kbd>+<kbd>R</kbd></td><td>Run dialog</td></tr>
+        <tr><td><kbd>Win</kbd>+<kbd>I</kbd></td><td>Open Settings</td></tr>
+        <tr><td><kbd>Win</kbd>+<kbd>X</kbd></td><td>Quick admin menu (Device Manager, Disk Mgmt, etc.)</td></tr>
+        <tr><td><kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td>Snipping/screenshot tool</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Esc</kbd></td><td>Open Task Manager directly</td></tr>
+        <tr><td><kbd>Win</kbd>+<kbd>Tab</kbd></td><td>Task view / virtual desktops</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Del</kbd></td><td>Security options screen</td></tr>
+        <tr><td><kbd>Win</kbd>+<kbd>P</kbd></td><td>Display/projector mode switch</td></tr>
+        <tr><td><kbd>Win</kbd>+<kbd>D</kbd></td><td>Show desktop</td></tr>
+      </table></div>
+    </div>
+
+    <div class="card" data-searchable data-title="Useful Windows admin tools MMC consoles" data-section="Extras">
+      <div class="card-title"><span class="ic">🧰</span> Run-box admin tools worth memorizing</div>
+      <div class="tbl-wrap"><table>
+        <tr><td><code>devmgmt.msc</code></td><td>Device Manager</td></tr>
+        <tr><td><code>services.msc</code></td><td>Services console</td></tr>
+        <tr><td><code>compmgmt.msc</code></td><td>Computer Management</td></tr>
+        <tr><td><code>gpedit.msc</code></td><td>Local Group Policy Editor</td></tr>
+        <tr><td><code>diskmgmt.msc</code></td><td>Disk Management</td></tr>
+        <tr><td><code>eventvwr.msc</code></td><td>Event Viewer</td></tr>
+        <tr><td><code>dsa.msc</code></td><td>Active Directory Users and Computers</td></tr>
+        <tr><td><code>secpol.msc</code></td><td>Local Security Policy</td></tr>
+        <tr><td><code>msconfig</code></td><td>System Configuration (boot/startup)</td></tr>
+        <tr><td><code>msinfo32</code></td><td>System Information summary</td></tr>
+        <tr><td><code>control userpasswords2</code></td><td>Advanced user accounts dialog</td></tr>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Security basics phishing malware best practices" data-section="Extras">
+    <div class="card-title"><span class="ic">🛡</span> Security basics for the desk</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">•</span><div>Suspected phishing: don't click anything in the message — check the sender's actual email address (not just display name), hover links to preview the real URL, and report/forward per your org's process.</div></div>
+      <div class="fix-step"><span class="num">•</span><div>Suspected malware/ransomware: disconnect the machine from the network immediately (pull the cable / disable Wi-Fi) before further investigation — containment first, diagnosis second.</div></div>
+      <div class="fix-step"><span class="num">•</span><div>Never disclose a user's password to anyone over the phone, including someone claiming to be IT/security/a VIP — verify through a separate channel if anything feels off.</div></div>
+      <div class="fix-step"><span class="num">•</span><div>USB drives from unknown sources: don't plug into a production machine — use an isolated/sandboxed device if you must inspect one at all.</div></div>
+      <div class="fix-step"><span class="num">•</span><div>Always lock your own workstation (<kbd>Win</kbd>+<kbd>L</kbd>) when stepping away from a user's desk while still logged in with elevated credentials.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Remote support tools RDP screen share" data-section="Extras">
+    <div class="card-title"><span class="ic">🖥</span> Remote support basics</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>RDP (port 3389) needs the target machine's network/firewall to allow it, and the target must have Remote Desktop enabled (Settings → System → Remote Desktop) and the user account added to the Remote Desktop Users group if not an admin.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>"Remote Desktop can't connect" with a working ping usually means the RDP service isn't listening, the firewall is blocking 3389 specifically, or Network Level Authentication settings mismatch.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>For end-user screen-share tools (Quick Assist, TeamViewer, etc.), confirm the user has actually granted/accepted control before assuming the connection itself failed.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Always tell the user what you're about to do before doing it remotely — especially before closing apps or rebooting, since they may have unsaved work.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Ticket escalation checklist what to include" data-section="Extras">
+    <div class="card-title"><span class="ic">📋</span> Before you escalate a ticket — checklist</div>
+    <div class="card-meta">A well-documented escalation gets picked up faster and bounces back less</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">✓</span><div>Exact error message (screenshot, not paraphrased) and when it occurs.</div></div>
+      <div class="fix-step"><span class="num">✓</span><div>What you've already tried, and the result of each step — saves Tier 2 from repeating your work.</div></div>
+      <div class="fix-step"><span class="num">✓</span><div>Is it one user or many? One device or many? Narrows scope immediately for whoever picks it up next.</div></div>
+      <div class="fix-step"><span class="num">✓</span><div>When did it start, and did anything change around that time (update, new hardware, moved desks, password reset)?</div></div>
+      <div class="fix-step"><span class="num">✓</span><div>Device name/asset tag, OS version, and relevant software versions.</div></div>
+      <div class="fix-step"><span class="num">✓</span><div>Business impact/urgency — "can't process payroll" escalates differently than "icon looks slightly off."</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="Event viewer log levels how to read" data-section="Extras">
+    <div class="card-title"><span class="ic">📜</span> Reading Event Viewer effectively</div>
+    <div class="fix">
+      <div class="fix-step"><span class="num">1</span><div>Windows Logs → System: hardware, driver, and OS-level events. Application: software-level crashes/errors.</div></div>
+      <div class="fix-step"><span class="num">2</span><div>Filter by Event level (Critical/Error/Warning) and a tight time range around when the issue occurred — unfiltered logs are too noisy to read top to bottom.</div></div>
+      <div class="fix-step"><span class="num">3</span><div>Note the Event ID and Source — searching "[Source] Event ID [number]" usually finds exactly what it means and common fixes.</div></div>
+      <div class="fix-step"><span class="num">4</span><div>Security log Event ID 4625 = failed logon attempt, 4740 = account locked out, 4624 = successful logon — the three most useful for account-related tickets.</div></div>
+    </div>
+  </div>
+
+  <div class="card" data-searchable data-title="When to escalate vs handle yourself decision" data-section="Extras">
+    <div class="card-title"><span class="ic">🎯</span> Quick decision: handle it now vs. escalate</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Handle at desk level</th><th>Escalate</th></tr>
+      <tr><td>Single user, single device</td><td>Multiple users/sites affected simultaneously</td></tr>
+      <tr><td>Known fix exists in this manual</td><td>Suspected security incident/breach</td></tr>
+      <tr><td>Software/profile/driver level</td><td>Core infrastructure (DC, firewall, core switch) suspected</td></tr>
+      <tr><td>Reproducible and you have access/permissions</td><td>Requires permissions or access you don't have</td></tr>
+      <tr><td>Low business impact, no urgency</td><td>Revenue-impacting or executive-impacting</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<footer style="padding:40px 44px; text-align:center; color:var(--text-faint); font-family:var(--mono); font-size:11.5px; border-top:1px solid var(--line);">
+  IT SUPPORT FIELD MANUAL · BUILT FOR THE DESK, NOT THE SHELF · KEEP IT UPDATED AS YOU LEARN
+</footer>
+
+
+    </div>
+  </main>
+</div>
+
+<button class="totop" id="totop" aria-label="Back to top">↑</button>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Build search index from all [data-searchable] cards ---------- */
+  var cards = Array.prototype.slice.call(document.querySelectorAll('[data-searchable]'));
+  var index = cards.map(function(card){
+    var section = card.closest('section');
+    return {
+      el: card,
+      sectionId: section ? section.id : '',
+      sectionLabel: card.getAttribute('data-section') || '',
+      title: card.getAttribute('data-title') || (card.querySelector('.card-title') ? card.querySelector('.card-title').textContent.trim() : ''),
+      text: (card.textContent || '').toLowerCase(),
+      titleLower: (card.getAttribute('data-title') || '').toLowerCase()
+    };
+  });
+
+  /* ---------- DOM refs ---------- */
+  var input = document.getElementById('searchInput');
+  var clearBtn = document.getElementById('searchClear');
+  var resultsPanel = document.getElementById('searchResults');
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  var navToggle = document.getElementById('navToggle');
+  var totop = document.getElementById('totop');
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.nav-link'));
+
+  var activeIndex = -1;
+  var currentResults = [];
+
+  function escapeHtml(str){
+    return str.replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function buildSnippet(item, query){
+    var text = item.el.textContent.replace(/\s+/g, ' ').trim();
+    var lower = text.toLowerCase();
+    var qLower = query.toLowerCase();
+    var idx = lower.indexOf(qLower);
+    var snippet;
+    if(idx === -1){
+      snippet = text.slice(0, 130);
+    } else {
+      var start = Math.max(0, idx - 50);
+      var end = Math.min(text.length, idx + qLower.length + 80);
+      snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+    }
+    var safe = escapeHtml(snippet);
+    // highlight all query word matches
+    var words = query.trim().split(/\s+/).filter(Boolean);
+    words.forEach(function(w){
+      if(w.length < 2) return;
+      var re = new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+      safe = safe.replace(re, '<mark>$1</mark>');
+    });
+    return safe;
+  }
+
+  function scoreItem(item, qWords){
+    var score = 0;
+    qWords.forEach(function(w){
+      if(item.titleLower.indexOf(w) !== -1) score += 10;
+      var occurrences = item.text.split(w).length - 1;
+      score += occurrences;
+    });
+    return score;
+  }
+
+  function runSearch(query){
+    query = query.trim();
+    if(query.length === 0){
+      resultsPanel.classList.remove('show');
+      resultsPanel.innerHTML = '';
+      currentResults = [];
+      activeIndex = -1;
+      return;
+    }
+    var qWords = query.toLowerCase().split(/\s+/).filter(Boolean);
+    var matches = index.filter(function(item){
+      return qWords.every(function(w){ return item.text.indexOf(w) !== -1; });
+    });
+    matches.forEach(function(item){ item._score = scoreItem(item, qWords); });
+    matches.sort(function(a,b){ return b._score - a._score; });
+    matches = matches.slice(0, 12);
+    currentResults = matches;
+    activeIndex = -1;
+
+    if(matches.length === 0){
+      resultsPanel.innerHTML = '<div class="sr-empty">No matches for &ldquo;' + escapeHtml(query) + '&rdquo;. Try a different term.</div>';
+      resultsPanel.classList.add('show');
+      return;
+    }
+
+    resultsPanel.innerHTML = matches.map(function(item, i){
+      return '<div class="sr-item" data-idx="' + i + '" role="button" tabindex="0">' +
+        '<div class="sr-section">' + escapeHtml(item.sectionLabel) + '</div>' +
+        '<div class="sr-title">' + escapeHtml(item.title) + '</div>' +
+        '<div class="sr-snippet">' + buildSnippet(item, query) + '</div>' +
+        '</div>';
+    }).join('');
+    resultsPanel.classList.add('show');
+
+    Array.prototype.slice.call(resultsPanel.querySelectorAll('.sr-item')).forEach(function(el){
+      el.addEventListener('click', function(){
+        var idx = parseInt(el.getAttribute('data-idx'), 10);
+        goToResult(idx);
+      });
+    });
+  }
+
+  function goToResult(idx){
+    var item = currentResults[idx];
+    if(!item) return;
+    item.el.scrollIntoView({behavior:'smooth', block:'center'});
+    item.el.style.transition = 'box-shadow .3s ease, border-color .3s ease';
+    item.el.style.boxShadow = '0 0 0 2px var(--amber)';
+    item.el.style.borderColor = 'var(--amber)';
+    setTimeout(function(){
+      item.el.style.boxShadow = '';
+      item.el.style.borderColor = '';
+    }, 1800);
+    resultsPanel.classList.remove('show');
+    input.value = '';
+    clearBtn.classList.remove('show');
+    closeMobileSidebar();
+  }
+
+  function updateActiveHighlight(){
+    var items = resultsPanel.querySelectorAll('.sr-item');
+    items.forEach(function(el, i){
+      el.classList.toggle('active', i === activeIndex);
+    });
+    if(activeIndex >= 0 && items[activeIndex]){
+      items[activeIndex].scrollIntoView({block:'nearest'});
+    }
+  }
+
+  input.addEventListener('input', function(){
+    clearBtn.classList.toggle('show', input.value.length > 0);
+    runSearch(input.value);
+  });
+
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowDown'){
+      e.preventDefault();
+      if(currentResults.length === 0) return;
+      activeIndex = Math.min(activeIndex + 1, currentResults.length - 1);
+      updateActiveHighlight();
+    } else if(e.key === 'ArrowUp'){
+      e.preventDefault();
+      if(currentResults.length === 0) return;
+      activeIndex = Math.max(activeIndex - 1, 0);
+      updateActiveHighlight();
+    } else if(e.key === 'Enter'){
+      e.preventDefault();
+      if(activeIndex >= 0){ goToResult(activeIndex); }
+      else if(currentResults.length > 0){ goToResult(0); }
+    } else if(e.key === 'Escape'){
+      input.value = '';
+      clearBtn.classList.remove('show');
+      resultsPanel.classList.remove('show');
+      input.blur();
+    }
+  });
+
+  clearBtn.addEventListener('click', function(){
+    input.value = '';
+    clearBtn.classList.remove('show');
+    resultsPanel.classList.remove('show');
+    input.focus();
+  });
+
+  document.addEventListener('click', function(e){
+    if(!resultsPanel.contains(e.target) && e.target !== input){
+      resultsPanel.classList.remove('show');
+    }
+  });
+
+  /* global "/" to focus search, unless typing in a field already */
+  document.addEventListener('keydown', function(e){
+    if(e.key === '/' && document.activeElement !== input){
+      var tag = document.activeElement.tagName;
+      if(tag !== 'INPUT' && tag !== 'TEXTAREA'){
+        e.preventDefault();
+        input.focus();
+      }
+    }
+  });
+
+  /* ---------- Nav link scrolling + active state ---------- */
+  navLinks.forEach(function(link){
+    link.addEventListener('click', function(){
+      var targetId = link.getAttribute('data-target');
+      var targetEl = document.getElementById(targetId);
+      if(targetEl){
+        targetEl.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+      closeMobileSidebar();
+    });
+  });
+
+  var sectionEls = navLinks.map(function(l){ return document.getElementById(l.getAttribute('data-target')); }).filter(Boolean);
+
+  function onScrollSpy(){
+    var scrollPos = window.scrollY + 120;
+    var activeSec = null;
+    sectionEls.forEach(function(sec){
+      if(sec.offsetTop <= scrollPos){ activeSec = sec; }
+    });
+    navLinks.forEach(function(link){
+      link.classList.toggle('active', activeSec && link.getAttribute('data-target') === activeSec.id);
+    });
+    totop.classList.toggle('show', window.scrollY > 400);
+  }
+  window.addEventListener('scroll', onScrollSpy, {passive:true});
+  onScrollSpy();
+
+  totop.addEventListener('click', function(){
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  /* ---------- Mobile sidebar ---------- */
+  function openMobileSidebar(){
+    sidebar.classList.add('open');
+    overlay.classList.add('show');
+  }
+  function closeMobileSidebar(){
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  }
+  if(navToggle){
+    navToggle.addEventListener('click', openMobileSidebar);
+  }
+  overlay.addEventListener('click', closeMobileSidebar);
+
+})();
+</script>
+
+</body>
+</html>
